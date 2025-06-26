@@ -42,10 +42,19 @@ pipeline {
                     env.PORT = (env.BASE_PORT.toInteger() + env.BUILD_NUMBER.toInteger()).toString()
                 }
 
-                bat """
-                start cmd /c "dotnet %RUN_FOLDER%\\WebApplication1.dll --urls=http://localhost:%PORT% > %RUN_FOLDER%\\log.txt 2>&1"
+                powershell """
+                Start-Process -FilePath 'dotnet' `
+                    -ArgumentList "'C:\\deploy\\site_${BUILD_NUMBER}\\WebApplication1.dll --urls=http://localhost:${PORT}'" `
+                    -RedirectStandardOutput 'C:\\deploy\\site_${BUILD_NUMBER}\\log.txt' `
+                    -RedirectStandardError 'C:\\deploy\\site_${BUILD_NUMBER}\\err.txt' `
+                    -WindowStyle Hidden
                 """
-                echo "✅ App is now running at http://localhost:${PORT}"
+
+                echo " App is now running at: http://localhost:${PORT}"
+
+                script {
+                    currentBuild.description = "<a href='http://localhost:${PORT}'>🌐 App on :${PORT}</a>"
+                }
             }
         }
     }

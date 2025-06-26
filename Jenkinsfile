@@ -29,7 +29,7 @@ pipeline {
 
         stage('Publish') {
             steps {
-                bat "dotnet publish -c Release -o \"${env.DEPLOY_PATH}\""
+                bat "dotnet publish WebApplication1/WebApplication1.csproj -c Release -o \"${env.DEPLOY_PATH}\""
             }
         }
 
@@ -38,9 +38,9 @@ pipeline {
                 powershell '''
                 Import-Module WebAdministration
 
-                $siteName = "${env:SITE_NAME}"
-                $sitePath = "${env:DEPLOY_PATH}"
-                $port = ${env:SITE_PORT}
+                $siteName = $env:SITE_NAME
+                $sitePath = $env:DEPLOY_PATH
+                $port = $env:SITE_PORT
 
                 if (-not (Test-Path "IIS:\\Sites\\$siteName")) {
                     Write-Output "🔧 Creating new IIS site..."

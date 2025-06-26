@@ -50,21 +50,22 @@ pipeline {
 
         stage('Stop IIS') {
             steps {
-                echo '🛑 Stopping IIS to unlock files'
-                powershell '''
+                echo '🛑 Stopping IIS App Pool'
+                powershell """
                     Import-Module WebAdministration
-                    if ((Get-WebAppPoolState -Name "${env.APP_POOL_NAME}").Value -eq "Started") {
-                        Stop-WebAppPool -Name "${env.APP_POOL_NAME}"
-                        Start-Sleep -Seconds 3
+                    \$pool = Get-WebAppPoolState -Name '${env.APP_POOL_NAME}'
+                    if (\$pool.Value -eq 'Started') {
+                        Stop-WebAppPool -Name '${env.APP_POOL_NAME}'
+                        Start-Sleep -Seconds 2
                     }
-                '''
+                """
             }
         }
 
         stage('Clean & Copy Deploy Folder') {
             steps {
-                echo '📁 Cleaning deploy folder and copying files'
-                bat "rmdir /S /Q \"${env.DEPLOY_DIR}\" || echo Folder not found"
+                echo '📁 Cleaning and copying files to deployment folder'
+                bat "rmdir /S /Q \"${env.DEPLOY_DIR}\" || echo Folder does not exist"
                 bat "mkdir \"${env.DEPLOY_DIR}\""
                 bat "xcopy \"%WORKSPACE%\\${env.PUBLISH_DIR}\" \"${env.DEPLOY_DIR}\" /E /Y /I /R"
             }
@@ -73,30 +74,30 @@ pipeline {
         stage('Start IIS') {
             steps {
                 echo '🚀 Starting IIS App Pool'
-                powershell '''
+                powershell """
                     Import-Module WebAdministration
-                    Start-WebAppPool -Name "${env.APP_POOL_NAME}"
-                '''
+                    Start-WebAppPool -Name '${env.APP_POOL_NAME}'
+                """
             }
         }
 
         stage('Ensure IIS Site Exists') {
             steps {
-                echo '🌐 Deploying to IIS'
-                powershell '''
+                echo '🌐 Ensuring IIS site exists'
+                powershell """
                     Import-Module WebAdministration
                     if (-not (Test-Path "IIS:\\Sites\\${env.IIS_SITE_NAME}")) {
-                        New-Website -Name "${env.IIS_SITE_NAME}" -Port ${env.IIS_SITE_PORT} -PhysicalPath "${env.IIS_PHYSICAL_PATH}" -ApplicationPool "${env.APP_POOL_NAME}"
+                        New-Website -Name '${env.IIS_SITE_NAME}' -Port ${env.IIS_SITE_PORT} -PhysicalPath '${env.IIS_PHYSICAL_PATH}' -ApplicationPool '${env.APP_POOL_NAME}'
                     } else {
-                        Write-Host "IIS site already exists"
+                        Write-Host 'IIS site already exists.'
                     }
-                '''
+                """
             }
         }
 
         stage('Done') {
             steps {
-                echo "✅ Deployed successfully: http://localhost:${env.IIS_SITE_PORT}"
+                echo "✅ Deployment completed: http://localhost:${env.IIS_SITE_PORT}"
             }
         }
     }

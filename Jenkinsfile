@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        BASE_PORT = 5000
+    }
+
     stages {
         stage('Clone') {
             steps {
@@ -8,55 +12,40 @@ pipeline {
             }
         }
 
-        stage('Restore Packages') {
+        stage('Restore & Build') {
             steps {
-                echo 'Restoring packages...'
                 bat 'dotnet restore'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo 'Building project...'
                 bat 'dotnet build --configuration Release'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                bat 'dotnet test --no-build --verbosity normal'
+                bat 'dotnet test --no-build --configuration Release --verbosity normal'
             }
         }
 
-        stage('Publish to Temp Folder') {
+        stage('Publish') {
             steps {
-                echo 'Publishing project...'
-                bat 'dotnet publish -c Release -o ./publish'
+                script {
+                    env.RUN_ID = "site_${BUILD_NUMBER}"
+                    env.RUN_FOLDER = "C:\\deploy\\${env.RUN_ID}"
+                }
+
+                bat 'dotnet publish -c Release -o "%RUN_FOLDER%"'
             }
         }
 
-        stage('Copy to IIS Folder') {
+        stage('Run Web App') {
             steps {
-                echo 'Copying files to IIS folder...'
-                bat '''
-                    icacls "C:\\wwwroot\\myproject" /grant Everyone:F /T
-                    xcopy "%WORKSPACE%\\publish" "C:\\wwwroot\\myproject" /E /Y /I /R
-                '''
-            }
-        }
+                script {
+                    env.PORT = (env.BASE_PORT.toInteger() + env.BUILD_NUMBER.toInteger()).toString()
+                }
 
-        stage('Deploy to IIS') {
-            steps {
-                powershell '''
-                    Import-Module WebAdministration
-
-                    if (-not (Test-Path IIS:\\Sites\\MySite)) {
-                        New-Website -Name "MySite" -Port 81 -PhysicalPath "C:\\wwwroot\\myproject" -ApplicationPool "DefaultAppPool"
-                    } else {
-                        Restart-WebAppPool -Name "DefaultAppPool"
-                    }
-                '''
+                bat """
+                start cmd /c "dotnet %RUN_FOLDER%\\WebApplication1.dll --urls=http://localhost:%PORT% > %RUN_FOLDER%\\log.txt 2>&1"
+                """
+                echo "✅ App is now running at http://localhost:${PORT}"
             }
         }
     }

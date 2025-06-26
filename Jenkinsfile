@@ -59,6 +59,7 @@ pipeline {
         stage('Publish') {
             steps {
                 echo '📁 Copying published files to deployment folder'
+                bat "rmdir /S /Q \"${env.DEPLOY_DIR}\" && mkdir \"${env.DEPLOY_DIR}\""
                 bat "xcopy \"%WORKSPACE%\\${env.PUBLISH_DIR}\" \"${env.DEPLOY_DIR}\" /E /Y /I /R"
             }
         }

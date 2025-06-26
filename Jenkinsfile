@@ -35,27 +35,27 @@ pipeline {
 
         stage('Deploy to IIS') {
             steps {
-                powershell '''
-                Import-Module WebAdministration
+                powershell """
+                    Import-Module WebAdministration
 
-                $siteName = $env:SITE_NAME
-                $sitePath = $env:DEPLOY_PATH
-                $port = $env:SITE_PORT
+                    \$siteName = '${env.SITE_NAME}'
+                    \$sitePath = '${env.DEPLOY_PATH}'
+                    \$port = ${env.SITE_PORT}
 
-                if (-not (Test-Path "IIS:\\Sites\\$siteName")) {
-                    Write-Output "🔧 Creating new IIS site..."
-                    New-Website -Name $siteName -Port $port -PhysicalPath $sitePath -ApplicationPool "DefaultAppPool"
-                } else {
-                    Write-Output "🔄 Restarting AppPool..."
-                    Restart-WebAppPool -Name "DefaultAppPool"
-                }
-                '''
+                    if (-not (Test-Path "IIS:\\Sites\\\$siteName")) {
+                        Write-Output "🔧 Creating new IIS site..."
+                        New-Website -Name \$siteName -Port \$port -PhysicalPath \$sitePath -ApplicationPool "DefaultAppPool"
+                    } else {
+                        Write-Output "🔄 Restarting AppPool..."
+                        Restart-WebAppPool -Name "DefaultAppPool"
+                    }
+                """
             }
         }
 
         stage('Done') {
             steps {
-                echo " Site deployed at: http://localhost:${SITE_PORT}"
+                echo "✅ Site deployed at: http://localhost:${env.SITE_PORT}"
             }
         }
     }

@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     environment {
-        BASE_PORT = 5000
+        DEPLOY_PATH = "C:\\inetpub\\MySite"
+        SITE_NAME = "MySite"
+        SITE_PORT = "81"
     }
 
     stages {
@@ -27,34 +29,33 @@ pipeline {
 
         stage('Publish') {
             steps {
-                script {
-                    env.RUN_ID = "site_${BUILD_NUMBER}"
-                    env.RUN_FOLDER = "C:\\deploy\\${env.RUN_ID}"
-                }
-
-                bat 'dotnet publish -c Release -o "%RUN_FOLDER%"'
+                bat "dotnet publish -c Release -o \"${env.DEPLOY_PATH}\""
             }
         }
 
-        stage('Run Web App') {
+        stage('Deploy to IIS') {
             steps {
-                script {
-                    env.PORT = (env.BASE_PORT.toInteger() + env.BUILD_NUMBER.toInteger()).toString()
+                powershell '''
+                Import-Module WebAdministration
+
+                $siteName = "${env:SITE_NAME}"
+                $sitePath = "${env:DEPLOY_PATH}"
+                $port = ${env:SITE_PORT}
+
+                if (-not (Test-Path "IIS:\\Sites\\$siteName")) {
+                    Write-Output "🔧 Creating new IIS site..."
+                    New-Website -Name $siteName -Port $port -PhysicalPath $sitePath -ApplicationPool "DefaultAppPool"
+                } else {
+                    Write-Output "🔄 Restarting AppPool..."
+                    Restart-WebAppPool -Name "DefaultAppPool"
                 }
+                '''
+            }
+        }
 
-                powershell """
-                Start-Process -FilePath 'dotnet' `
-                    -ArgumentList "'C:\\deploy\\site_${BUILD_NUMBER}\\WebApplication1.dll --urls=http://localhost:${PORT}'" `
-                    -RedirectStandardOutput 'C:\\deploy\\site_${BUILD_NUMBER}\\log.txt' `
-                    -RedirectStandardError 'C:\\deploy\\site_${BUILD_NUMBER}\\err.txt' `
-                    -WindowStyle Hidden
-                """
-
-                echo " App is now running at: http://localhost:${PORT}"
-
-                script {
-                    currentBuild.description = "<a href='http://localhost:${PORT}'>🌐 App on :${PORT}</a>"
-                }
+        stage('Done') {
+            steps {
+                echo " Site deployed at: http://localhost:${SITE_PORT}"
             }
         }
     }

@@ -27,3 +27,4 @@ C:\Users\daong\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\ref
 C:\Users\daong\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\WebApplication1.pdb
 C:\Users\daong\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\WebApplication1.genruntimeconfig.cache
 C:\Users\daong\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\ref\WebApplication1.dll
+C:\Users\daong\source\repos\WebApplication1\WebApplication1\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

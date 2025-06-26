@@ -1,7 +1,8 @@
 ﻿var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Dòng này giúp nhận cổng truyền từ Jenkins: --urls=http://localhost:5012
-builder.WebHost.UseUrls(args);
+// ✅ Lọc các tham số dạng URL từ args để dùng cho UseUrls
+var urls = args.Where(arg => arg.StartsWith("http://") || arg.StartsWith("https://")).ToArray();
+builder.WebHost.UseUrls(urls);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -19,6 +20,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(

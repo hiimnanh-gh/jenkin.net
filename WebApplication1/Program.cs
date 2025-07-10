@@ -7,6 +7,8 @@ builder.WebHost.UseUrls(urls);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.WebHost.UseUrls("http://0.0.0.0:81");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

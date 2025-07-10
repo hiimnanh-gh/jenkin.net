@@ -100,5 +100,24 @@ pipeline {
                 echo "✅ Deployment completed: http://localhost:${env.IIS_SITE_PORT}"
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                echo '🐳 Building Docker image from published folder'
+                bat "docker build -t webapp:latest -f \"%WORKSPACE%\\Dockerfile.runtime\" ."
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                echo '🚀 Running Docker container on port 8181'
+                bat '''
+                    docker stop webapp || exit 0
+                    docker rm webapp || exit 0
+                    docker run -d --name webapp -p 8181:80 webapp:latest
+                '''
+            }
+        }
+
     }
 }

@@ -7,7 +7,7 @@ pipeline {
         PUBLISH_DIR = "publish"
         DEPLOY_DIR = "C:\\wwwroot\\myproject"
         IIS_SITE_NAME = "MySite"
-        IIS_SITE_PORT = 80
+        IIS_SITE_PORT = 81
         IIS_PHYSICAL_PATH = "C:\\wwwroot\\myproject"
         APP_POOL_NAME = "DefaultAppPool"
     }

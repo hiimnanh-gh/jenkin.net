@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
+# 👇 Copy file .csproj đúng với vị trí thực tế
 COPY ["WebApplication1.csproj", "./"]
 RUN dotnet restore "WebApplication1.csproj"
 

@@ -1,0 +1,6 @@
+@MobileExamAPI_HostAddress = http://localhost:5129
+
+GET {{MobileExamAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

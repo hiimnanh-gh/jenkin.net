@@ -1,0 +1,11 @@
+# Runtime only image for published .NET app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+EXPOSE 80
+
+# Copy thư mục đã publish (từ Jenkins stage 'Publish')
+COPY ./publish ./
+
+# Khởi động ứng dụng
+ENTRYPOINT ["dotnet", "WebApplication1.dll"]
